@@ -3,7 +3,7 @@ import threading
 import time
 
 # Konfigurasi: Masukkan IP dan Port milik Device 2 (Proxy)
-PROXY_IP = "192.168.1.3"  # Ganti dengan IP laptop temanmu yang jadi Proxy
+PROXY_IP = "192.168.1.6"  # Ganti dengan IP laptop temanmu yang jadi Proxy
 PROXY_PORT = 9999         # Ganti sesuai port yang disepakati dengan Proxy
 
 def send_single_request(request_id=1):

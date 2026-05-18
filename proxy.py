@@ -35,7 +35,7 @@ def handle_client(client_socket):
 def start_proxy():
     # Proxy listen di semua interface laptopmu sendiri
     PROXY_IP = "0.0.0.0"
-    PROXY_PORT = 9090 # Gunakan port berbeda dari server, misal 9090
+    PROXY_PORT = 9999 # Gunakan port berbeda dari server, misal 9090
 
     proxy_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     proxy_server.bind((PROXY_IP, PROXY_PORT))
