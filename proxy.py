@@ -2,7 +2,7 @@ import socket
 import threading
 
 # SESUAIKAN DENGAN IP SERVER TEMANMU
-SERVER_IP = "192.168.0.184" 
+SERVER_IP = "10.15.11.249" 
 SERVER_PORT = 9999
 
 def handle_client(client_socket):
@@ -20,7 +20,12 @@ def handle_client(client_socket):
         server_socket.sendall(request)
 
         # 3. Terima respon dari Server
-        response = server_socket.recv(4096)
+        response = b""
+        while True:
+            data = server_socket.recv(4096)
+            if not data:
+                break
+            response += data
         print(f"[PROXY] Menerima respon dari Server. Meneruskan ke Client...")
 
         # 4. Kembalikan respon ke Client
@@ -35,7 +40,7 @@ def handle_client(client_socket):
 def start_proxy():
     # Proxy listen di semua interface laptopmu sendiri
     PROXY_IP = "0.0.0.0"
-    PROXY_PORT = 9999 # Gunakan port berbeda dari server, misal 9090
+    PROXY_PORT = 9090 # Gunakan port berbeda dari server, misal 9090
 
     proxy_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     proxy_server.bind((PROXY_IP, PROXY_PORT))
