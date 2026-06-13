@@ -1,10 +1,11 @@
 import socket
 import threading
 import os
+import time
 from datetime import datetime
 
 # ==========================================
-# KONFIGURASI PROXY (Sesuai Client)
+# KONFIGURASI PROXY
 # ==========================================
 PROXY_HOST = '0.0.0.0'      
 PROXY_PORT = 9090 
@@ -15,6 +16,7 @@ SERVER_PORT = 8000
 
 CACHE_DIR = "cache_storage"
 TIMEOUT_LIMIT = 5.0         
+CACHE_TTL = 30.0            # KECERDASAN BARU: Waktu kedaluwarsa cache (dalam detik)
 
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
@@ -67,17 +69,25 @@ def handle_client(client_socket, client_address):
         
         cache_file_path = get_cache_filename(url_path)
         
-        # --- MEKANISME CACHE HIT ---
+        # --- MEKANISME CACHE HIT DENGAN VALIDASI TTL ---
+        is_cache_valid = False
         with cache_lock:
             if method == 'GET' and os.path.exists(cache_file_path) and os.path.isfile(cache_file_path):
-                with open(cache_file_path, 'rb') as f:
-                    cached_response = f.read()
+                # Hitung umur file cache berdasarkan waktu modifikasi terakhir (mtime)
+                file_age = time.time() - os.path.getmtime(cache_file_path)
                 
-                client_socket.sendall(cached_response)
-                print(f"[LOG PROXY] {get_timestamp()} | Client: {client_address[0]} -> Akses: {url_path} | Cache: HIT")
-                return
+                if file_age <= CACHE_TTL:
+                    is_cache_valid = True
+                    with open(cache_file_path, 'rb') as f:
+                        cached_response = f.read()
+                    
+                    client_socket.sendall(cached_response)
+                    print(f"[LOG PROXY] {get_timestamp()} | Client: {client_address[0]} -> Akses: {url_path} | Cache: HIT (Umur: {file_age:.1f}s / TTL: {CACHE_TTL}s)")
+                    return
+                else:
+                    print(f"[LOG PROXY] {get_timestamp()} | Cache KEDALUWARSA ({file_age:.1f}s > {CACHE_TTL}s) untuk: {url_path}")
 
-        # --- MEKANISME CACHE MISS ---
+        # --- MEKANISME CACHE MISS (Belum ada cache ATAU Cache sudah Kedaluwarsa) ---
         print(f"[LOG PROXY] {get_timestamp()} | Client: {client_address[0]} -> Akses: {url_path} | Cache: MISS")
         
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -115,15 +125,14 @@ def handle_client(client_socket, client_address):
             client_socket.sendall(error_response)
             return
 
-        # --- SIMPAN KE FILE CACHE LOKAL (DENGAN SECURITY CHECK FOLDER) ---
+        # --- SIMPAN / UPDATE FILE CACHE LOKAL (REFRESH TTL) ---
         if b"200 OK" in response_bytes.split(b"\r\n")[0] and method == 'GET':
             with cache_lock:
-                # Perbaikan defensif: Buat folder otomatis jika dihapus manual saat runtime
                 if not os.path.exists(CACHE_DIR):
                     os.makedirs(CACHE_DIR)
                 with open(cache_file_path, 'wb') as f:
                     f.write(response_bytes)
-                print(f"[PROXY CACHE] Berhasil menyimpan berkas cache fisik: {cache_file_path}")
+                print(f"[PROXY CACHE] Berhasil memperbarui berkas cache fisik (Reset TTL): {cache_file_path}")
 
         client_socket.sendall(response_bytes)
 
@@ -140,6 +149,7 @@ def start_proxy():
         proxy_socket.bind((PROXY_HOST, PROXY_PORT))
         proxy_socket.listen(30)
         print(f"[*] Proxy Server berjalan aktif di port {PROXY_PORT}")
+        print(f"[*] Fitur Pintar: Cache TTL Aktif ({CACHE_TTL} detik)")
         print(f"[*] Topologi Target Upstream Server -> {SERVER_IP}:{SERVER_PORT}\n")
         
         while True:
