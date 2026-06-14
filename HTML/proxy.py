@@ -7,11 +7,11 @@ from datetime import datetime
 # ==========================================
 # KONFIGURASI PROXY
 # ==========================================
-PROXY_HOST = '0.0.0.0'      
+PROXY_HOST = '10.105.163.54'      
 PROXY_PORT = 9090 
 
 # SESUAIKAN DENGAN IP LAPTOP WEB SERVER (DEVICE 1)
-SERVER_IP = "127.0.0.1"  
+SERVER_IP = "10.105.163.249"  
 SERVER_PORT = 8000          
 
 CACHE_DIR = "cache_storage"

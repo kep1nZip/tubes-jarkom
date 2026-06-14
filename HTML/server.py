@@ -3,7 +3,7 @@ import threading
 import os
 from datetime import datetime
 
-HOST = '0.0.0.0'         
+HOST = '10.105.163.249'         
 TCP_PORT = 8000         
 UDP_PORT = 9000         
 

@@ -7,10 +7,10 @@ import re
 # =================================================================
 # KONFIGURASI TARGET (Sesuaikan IP saat demo)
 # =================================================================
-PROXY_IP = "127.0.0.1"      # IP Laptop B (Proxy Server)
+PROXY_IP = "10.105.163.54"      # IP Laptop B (Proxy Server)
 PROXY_TCP_PORT = 9090       # Port TCP Proxy Anda
 
-SERVER_IP = "127.0.0.1"     # IP Laptop A (Web Server) untuk UDP Pinger
+SERVER_IP = "10.105.163.249"     # IP Laptop A (Web Server) untuk UDP Pinger
 UDP_PORT = 9000             # Port UDP Langsung ke Server (Sesuai Modul)
 
 SAVE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "client_web")
