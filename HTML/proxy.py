@@ -33,7 +33,7 @@ def get_cache_filename(url_path):
     return os.path.join(CACHE_DIR, f"cache_{clean_path}")
 
 def load_local_error_page(status_code, fallback_text):
-    possible_paths = [f"{status_code}.html", f"errors/{status_code}.html", f"pages/{status_code}.html"]
+    possible_paths = [f"{status_code}.html", f"status/{status_code}.html", f"errors/{status_code}.html", f"pages/{status_code}.html"]
     for path in possible_paths:
         if os.path.exists(path):
             with open(path, 'rb') as f:
@@ -149,7 +149,7 @@ def start_proxy():
         proxy_socket.bind((PROXY_HOST, PROXY_PORT))
         proxy_socket.listen(30)
         print(f"[*] Proxy Server berjalan aktif di port {PROXY_PORT}")
-        print(f"[*] Fitur Pintar: Cache TTL Aktif ({CACHE_TTL} detik)")
+        print(f"[*] Cache TTL Aktif ({CACHE_TTL} detik)")
         print(f"[*] Topologi Target Upstream Server -> {SERVER_IP}:{SERVER_PORT}\n")
         
         while True:
