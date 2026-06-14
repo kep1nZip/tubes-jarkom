@@ -3,6 +3,7 @@ import time
 import os
 import webbrowser
 import re
+import posixpath
 
 # =================================================================
 # KONFIGURASI TARGET (Sesuaikan IP saat demo)
@@ -62,7 +63,7 @@ def save_file(filepath, data):
         f.write(data)
     return full_path
 
-def extract_assets(html_bytes):
+def extract_assets(html_bytes, current_dir):
     """Smart Asset Scraper: Membedah HTML untuk mencari CSS, JS, Gambar, dan Halaman Lain"""
     html = html_bytes.decode("utf-8", errors="ignore")
     patterns = [
@@ -78,8 +79,16 @@ def extract_assets(html_bytes):
             path = match if isinstance(match, str) else match[0]
             if path.startswith("http://") or path.startswith("https://"):
                 continue
+            
+            if not path.startswith("/"):
+                combined_path = posixpath.join(current_dir, path)
+                path = posixpath.normpath(combined_path)
+            else:
+                path = posixpath.normpath(path)
+                
             if not path.startswith("/"):
                 path = "/" + path
+                
             if path not in assets:
                 assets.append(path)
     return assets
@@ -111,9 +120,9 @@ def download_site(start_path):
         downloaded.add(filepath)
         print(f"  [OK DOWNLOADED] {filepath} ({len(body)} bytes)")
 
-        # Jika file berupa HTML, bedah isinya untuk mencari file CSS / Gambar pendukung
         if filepath.endswith(".html") or filepath == "/":
-            assets = extract_assets(body)
+            current_dir = posixpath.dirname(filepath)
+            assets = extract_assets(body, current_dir)
             for asset in assets:
                 if asset not in downloaded and asset not in queue:
                     queue.append(asset)
@@ -122,7 +131,7 @@ def download_site(start_path):
     return os.path.join(SAVE_DIR, start_path.lstrip("/").replace("/", os.sep))
 
 def run_http_client():
-    print("\nMasukkan halaman awal website (contoh: /index.html atau /)")
+    print("\nMasukkan halaman awal website (contoh: /index.html)")
     filename = input("Halaman: ").strip()
     if not filename.startswith("/"):
         filename = "/" + filename
